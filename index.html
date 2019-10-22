@@ -1,0 +1,142 @@
+<head>
+    <style>
+    
+    </style>
+</head>
+<canvas id="canvas" width="800" height="600" fontSize="80px"></canvas> 
+<script>
+    let canvas;
+    let canvasContext;
+    let scale = 0;
+    let flaga = true;
+    let interval;
+    let trafienie = false;
+    let user = {
+        score: 0,
+        x: 0,
+        y: 0,
+    }
+    let punkty = {
+        transparent:0,
+        zbior: [],
+        punktPlaceHolder: 0,
+        nowyPunkt: function(){
+            let ilePkt = Math.floor(Math.random()*7)+1;
+            this.punktPlaceHolder = new punkt(ilePkt);
+            this.zbior.push(this.punktPlaceHolder);
+            user.score +=ilePkt;
+        },
+        rysujPunkty: function(){
+            if(punkty.zbior.length != 0){
+                for(let i = 0; i < punkty.zbior.length;i++){
+                    punkty.zbior[i].rysuj();
+                    punkty.usunPunkty()                
+                }
+            }
+        },
+        usunPunkty: function(){
+            if(punkty.zbior.length != 0){
+                for(let i = 0; i < punkty.zbior.length;i++){
+                    if(punkty.zbior[i].life > 100){
+                        punkty.zbior.splice(i,1);
+                    }
+                } i=0;
+            }
+        },
+        
+    }
+    class punkt {
+        constructor(wartosc){
+            this.wartosc = wartosc;
+            this.life = 0;
+            this.X = Math.floor(Math.random()*600)+100;
+            this.Y = Math.floor(Math.random()*400)+100;
+        }
+        
+        rysuj(){
+        canvasContext.font = "normal 700 "+38*(1+this.wartosc/10)+"px Arial";
+        punkty.transparent = "rgba(207, 0, 15,"+this.sprawdzTransparent()+")";
+        canvasContext.fillStyle = punkty.transparent;
+        canvasContext.fillText(this.wartosc,this.X,this.Y);
+        canvasContext.strokeStyle = "rgba(255, 255, 255,1)"
+        canvasContext.lineWidth = 8;
+        canvasContext.strokeText = (this.wartosc,this.X,this.Y);
+        this.life++;
+        }
+        
+        sprawdzTransparent(){
+            let x = 10/this.life;
+            if(x<0.2){
+                return 0;
+            }else{
+            return x;
+            }
+        }
+    }
+    let kwardat = {
+        color: "blue",
+        size: 200,
+        kwadratX:300,
+        kwadratY:200,
+        rysujKwadrat: function(gdzieRysowac){
+            gdzieRysowac.fillStyle = this.color;
+            gdzieRysowac.fillRect(this.kwadratX - scale/2,this.kwadratY - scale/2 , this.size + scale, this.size + scale);
+        },
+        czyTrafiono: function(){
+            if (user.x > this.kwadratX - scale/2 && user.x < this.kwadratX - scale/ 2 + this.size + scale && user.y > this.kwadratY - scale/2 && user.y < this.kwadratY - scale/2 + this.size + scale){
+            punkty.nowyPunkt();
+            trafienie = true;
+            }
+        },
+    }
+window.onload = function(){
+    canvas = document.getElementById("canvas");
+    canvasContext = canvas.getContext('2d');
+    canvas.addEventListener('mousedown', klikniece);
+    canvas.addEventListener('mouseup', puszczenie);
+    drawEverything();
+}
+function drawEverything() {
+    canvasContext.fillStyle = 'black';
+    canvasContext.rotate(0);
+    canvasContext.fillRect(0,0,canvas.width,canvas.height);
+    
+    punkty.rysujPunkty();
+    kwardat.rysujKwadrat(canvasContext);
+    
+    canvasContext.font = "50px Arial";
+    canvasContext.fillText("Wynik:"+ user.score,10,45);
+    
+    if(trafienie){
+        if(scale > -30)
+        scale = scale -15;
+    }
+    else{
+    if(flaga == false){
+        scale = scale - 1
+    }else{
+        if (scale < -15)
+        scale = scale + 5
+        else
+        scale = scale + 1
+    };
+    
+    if(scale > 15){
+        flaga = false
+    } 
+    else if(scale < -15){
+        flaga = true
+    }
+    };
+    clearInterval(interval);
+    interval = setInterval(drawEverything, 1000/60);
+}
+    function klikniece(e){
+        user.x = e.clientX;
+        user.y = e.clientY;
+        kwardat.czyTrafiono();
+    }
+    function puszczenie(e){
+        trafienie = false;
+    }
+</script>
